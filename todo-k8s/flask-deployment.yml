@@ -1,0 +1,40 @@
+kind: Deployment 
+apiVersion: apps/v1 
+metadata: 
+  name: flask-deployment
+  namespace: todo-app 
+  labels: 
+    app: flask 
+spec:
+  replicas: 2
+  selector: 
+    matchLabels:
+      app: flask 
+      env: dev
+      version: v1 
+  template: 
+    metadata:
+      labels: 
+        app: flask 
+        env: dev 
+        version: v1 
+    spec: 
+      containers:
+        - name: flask-app-container
+          image: amandabral9954/flask-todo-app:1.0
+          ports: 
+            - containerPort: 5000
+          envFrom: 
+            - secretRef:
+                name: flask-secrets  # Passing DB credentials from Secret
+            - configMapRef:
+                name: flask-configmap   # Passing DB connection details from ConfigMap
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "250m" 
+            limits: 
+              memory: "512Mi"
+              cpu: "500m" 
+          
+  

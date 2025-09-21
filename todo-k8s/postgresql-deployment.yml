@@ -1,0 +1,51 @@
+kind: Deployment 
+apiVersion: apps/v1
+metadata: 
+  name: postgresql-deployment
+  namespace: todo-app 
+  labels:
+    app: postgrseql-depl 
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgresql 
+      env: dev 
+      version: v1 
+  template:
+    metadata:
+      labels:
+        app: postgresql
+        env: dev
+        version: v1 
+    spec:
+      containers:
+        - name: postgresql-db 
+          image: postgres:alpine
+          ports: 
+            - containerPort: 5432
+          envFrom: 
+            - secretRef:   # Passing DB credentials from Secret
+                name: psqldb-secret
+            - configMapRef:
+                name: psql-configmap 
+          volumeMounts:
+            - name: psql-volume
+              mountPath: /var/lib/postgresql/data/pgdata
+            - name: init-sql
+              mountPath: /docker-entrypoint-initdb.d
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+      volumes: 
+        - name: psql-volume 
+          emptyDir: {}
+        - name: init-sql 
+          configMap: 
+            name: postgres-init-script
+
+          
